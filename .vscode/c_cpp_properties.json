@@ -1,0 +1,14 @@
+{
+    "configurations": [{
+        "name": "WSL",
+        "intelliSenseMode": "gcc-x64",
+        "compilerPath": "/usr/bin/g++",
+        "includePath": [
+            "${workspaceFolder}/**"
+        ],
+        "defines": [],
+        "cStandard": "c11",
+        "cppStandard": "c++17"
+    }],
+    "version": 4
+  }
