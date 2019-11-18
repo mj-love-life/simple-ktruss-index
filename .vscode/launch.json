@@ -1,0 +1,40 @@
+{
+    "version": "0.2.0",                 //launch.json文件的语言版本
+    "configurations": [
+        {
+            "name": "Ktruss",       //自定义名称
+            "type": "cppdbg",
+            "request": "launch",
+            "preLaunchTask": "compile", //链接到之前的task.json
+            "program": "a.out",         //task编译所产生的文件
+            "args": [
+                "-fThreading"
+            ],
+            "stopAtEntry": false,
+            "cwd": "/home/mjgod/simple-ktruss-index",   //current working directory 当前工作目录，用wsl的格式写
+            "environment": [],
+            "externalConsole": true,
+            "windows": {
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            },
+            "pipeTransport": {
+                "pipeCwd": "",
+                "pipeProgram": "/bin/sh",
+                "pipeArgs": [
+                    "-c"
+                ],
+                "debuggerPath": "/usr/bin/gdb"
+            },
+            "sourceFileMap": {
+                "/home/mjgod/ktruss": "${workspaceFolder}"    //将cwd中的目录改写为windows的格式
+            }
+        }
+    ]
+}

@@ -83,6 +83,16 @@ void deal_file(string file_name) {
     in.close();
 }
 
+int get_id() {
+    string request_stream;
+    getline(cin, request_stream);
+
+    vector<string> info;
+    split(info, request_stream, is_any_of(" "));
+    pair<int, double> temp= pre_deal(info);
+    return temp.first;
+}
+
 int main() {
     // 读取文件
     string file_name;
@@ -99,9 +109,9 @@ int main() {
     k = 1;
     while(1){
         cout << "which vertex do you want to query: " << endl;
-        cin >> v_q;
-        cout << "Do you want to choose the k value ? 0 is yes, else is no " <<endl;
         getchar();
+        v_q = get_id();
+        cout << "Do you want to choose the k value ? 0 is yes, else is no " <<endl;
         getline(cin, choice);
         if (choice == "0") {
             cout << "The k value you want to query: " << endl;
