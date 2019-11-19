@@ -12,14 +12,31 @@
 #include <set>
 #include <deque>
 #include <ctime>
+#include <boost/foreach.hpp>
+#include <boost/typeof/typeof.hpp>
+#include <boost/bimap.hpp>
+#include <boost/bimap/set_of.hpp>
+#include <boost/bimap/vector_of.hpp>
+#include <boost/bimap/tags/tagged.hpp>
 
+using namespace boost::bimaps;
+using namespace boost;
 using namespace std;
 
+
+// bimap 仅仅支持只读的结构
+// 改成bimap双向map
+// block info to unique id
+extern bimap<string, int> block_info_id;
+bimap<string, int> block_info_id = bimap<string, int> ();
+
+// 用于双向存储
+// edge vertex to edge unique id
+extern bimap<vector<int>, int> Appear_Edge_id;
+bimap<vector<int>, int> Appear_Edge_id =bimap<vector<int>, int> ();
+
+
 // 用于记录所有的Block的hash_id
-extern map<string, int> block_info2id;
-map<string, int> block_info2id = map<string, int>();
-extern map<int, string> block_id2info;
-map<int, string> block_id2info = map<int, string>();
 extern int block_count;
 extern int global_k_max;
 int global_k_max = 0;
@@ -30,12 +47,8 @@ extern double time_threshold;
 
 // 全局变量
 extern set<int> Appear_Vertexs;
-extern map<vector<int>, int> Appear_Edges;
 extern map<int, int> Weight;
-extern map<int, vector<int> > Edges2id;
 set<int> Appear_Vertexs = set<int> ();
-map<vector<int>, int> Appear_Edges = map<vector<int>, int> ();
-map<int, vector<int> > Edges2id = map<int, vector<int> > ();
 map<int, int> Weight = map<int, int> ();
 
 
@@ -153,7 +166,7 @@ struct Real_Graph {
     
 
     void insert(vector<int> edge) {
-        int edge_index = Appear_Edges[edge];
+        int edge_index = Appear_Edge_id.left.find(edge)->second;
         if (Used_Edges.count(edge_index) == 0) {
             insert_vertex(edge[0], edge[1]);
             insert_vertex(edge[1], edge[0]);
@@ -172,7 +185,7 @@ struct Real_Graph {
         map<int, set<int>> result = map<int, set<int>> ();
         max_size = 0;
         for(set<int>::iterator i = Used_Edges.begin(); i != Used_Edges.end(); i++) {
-            vector<int> Edge_index = Edges2id[*i];
+            vector<int> Edge_index = Appear_Edge_id.right.find(*i)->second;
             result[*i] = get_map_key_intersection(Real_Vertexs[Edge_index[0]]->getNB(), Real_Vertexs[Edge_index[1]]->getNB());
             max_size = max(max_size, int(result[*i].size()));            
         }
@@ -220,14 +233,14 @@ struct Real_Graph {
             while(sups.size() > 0 && sups[0].second.size() <= (k - 2)) {
                 pair<int, set<int> > lowest_e = sups[0];
                 sups.pop_front();
-                int u = Edges2id[lowest_e.first][0];
-                int v = Edges2id[lowest_e.first][1];
+                int u = Appear_Edge_id.right.find(lowest_e.first)->second[0];
+                int v = Appear_Edge_id.right.find(lowest_e.first)->second[1];
                 if (Real_Vertexs[u]->getNB().size() > Real_Vertexs[v]->getNB().size()) {
                     swap(u, v);
                 }
                 for(set<int>::iterator i = lowest_e.second.begin(); i != lowest_e.second.end(); i++) {
-                    decrese_one(Appear_Edges[get_edge_help(*i, u)], sups, v);
-                    decrese_one(Appear_Edges[get_edge_help(*i, v)], sups, u);
+                    decrese_one(Appear_Edge_id.left.find(get_edge_help(*i, u))->second, sups, v);
+                    decrese_one(Appear_Edge_id.left.find(get_edge_help(*i, v))->second, sups, u);
                 }
                 Real_Vertexs[u]->get_trussness(v, k);
                 Real_Vertexs[v]->get_trussness(u, k);
@@ -254,7 +267,7 @@ struct Real_Graph {
         int l = 0;
         vector<pair<int, int>> NB2trussness = Real_Vertexs[Vq]->get_sort_vector();
         for(vector<pair<int, int>>::iterator i = NB2trussness.begin(); i != NB2trussness.end(); i++) {
-            int edge_tmp = Appear_Edges[get_edge_help(i->first, Vq)];
+            int edge_tmp = Appear_Edge_id.left.find(get_edge_help(i->first, Vq))->second;
             if (i->second >= k && visited.count(edge_tmp) == 0) {
                 l = l + 1;
                 stack<int> Q;
@@ -263,15 +276,15 @@ struct Real_Graph {
                 while(Q.size() > 0) {
                     int x_y = Q.top();
                     Q.pop();
-                    int x = Edges2id[x_y][0];
-                    int y = Edges2id[x_y][1];
+                    int x = Appear_Edge_id.right.find(x_y)->second[0];
+                    int y = Appear_Edge_id.right.find(x_y)->second[1];
                     result.insert(x);
                     result.insert(y);
                     set<int> Zs = get_map_key_intersection(Real_Vertexs[x]->getNB(), Real_Vertexs[y]->getNB());
                     for(set<int>::iterator z = Zs.begin(); z != Zs.end(); z++) {
                         if (Real_Vertexs[x]->NB2trussness[*z] >= k && Real_Vertexs[y]->NB2trussness[*z] >= k) {
-                            int x_z = Appear_Edges[get_edge_help(x, *z)];
-                            int y_z = Appear_Edges[get_edge_help(y, *z)];
+                            int x_z = Appear_Edge_id.left.find(get_edge_help(x, *z))->second;
+                            int y_z = Appear_Edge_id.left.find(get_edge_help(y, *z))->second;
                             if (visited.count(x_z) == 0) {
                                 Q.push(x_z);
                                 visited.insert(x_z);
@@ -306,24 +319,23 @@ struct Appear_Graph {
     // 插入一条新出现的边
     void insert(int a, int b) {
         vector<int> index = get_edge_help(a, b);
-        if(Appear_Edges.count(index) == 0) {
-            int edge_index = Appear_Edges.size();
-            Appear_Edges[index] = edge_index;
-            Edges2id[edge_index] = index;
+        if(Appear_Edge_id.left.count(index) == 0) {
+            int edge_index = Appear_Edge_id.left.size();
+            Appear_Edge_id.left.insert(make_pair(index, edge_index));
             Weight[edge_index] = 1;
             
         }
         else{
-            Weight[Appear_Edges[index]]++;
+            Weight[Appear_Edge_id.left.find(index)->second]++;
         }
-        if(Weight[Appear_Edges[index]] >= edge_threshold) {
+        if(Weight[Appear_Edge_id.left.find(index)->second] >= edge_threshold) {
                 real_graph->insert(index);
         }
     }
 
     void display_detail(set<int> results) {
         for(set<int>::iterator i = results.begin(); i != results.end(); i++) {
-            cout << block_id2info[*i] << endl;
+            cout << block_info_id.right.find(*i)->second << endl;
         }
         cout << "---------------------------" << endl;
     }

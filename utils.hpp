@@ -60,12 +60,11 @@ pair<int, double> pre_deal(vector<string> arrs) {
         unique_vec.push_back(arrs[i]);
     }
     string info = vec2str(unique_vec);
-    if(block_info2id.count(info) == 0) {
-        block_info2id.insert(make_pair(info, block_count));
-        block_id2info.insert(make_pair(block_count, info));
+    if(block_info_id.left.count(info) == 0) {
+        block_info_id.left.insert(make_pair(info, block_count));
         block_count++;
     }
-    return make_pair(block_info2id[info], get_time(submitat));
+    return make_pair(block_info_id.left.find(info)->second, get_time(submitat));
 }
 
 
