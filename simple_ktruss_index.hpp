@@ -204,14 +204,15 @@ struct Real_Graph {
                 break;
             }
         }
-        int now_index = i;
-        int now_size = sups[i].second.size();
-        i--;
-        for(; i >= 0; i--) {
-            if(sups[i].second.size() == now_size && i != now_index) {
-                swap(sups[i+1], sups[now_index]);
-            }
-        }
+        // int now_index = i;
+        // int now_size = sups[i].second.size();
+        // i--;
+        // for(; i >= 0; i--) {
+        //     if(sups[i].second.size() == now_size && i != now_index) {
+        //         swap(sups[i+1], sups[now_index]);
+        //     }
+        // }
+        sort(sups.begin(), sups.end(), ascending_cmp);
     }
 
     void display(deque<pair<int, set<int> > > sups) {
