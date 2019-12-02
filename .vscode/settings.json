@@ -9,6 +9,8 @@
         "ostream": "cpp",
         "iostream": "cpp",
         "cstring": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "iosfwd": "cpp",
+        "fstream": "cpp"
     }
 }

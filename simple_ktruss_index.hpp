@@ -18,38 +18,13 @@
 #include <boost/bimap/set_of.hpp>
 #include <boost/bimap/vector_of.hpp>
 #include <boost/bimap/tags/tagged.hpp>
+#include "res.hpp"
 
 using namespace boost::bimaps;
 using namespace boost;
 using namespace std;
 
 
-// bimap 仅仅支持只读的结构
-// 改成bimap双向map
-// block info to unique id
-extern bimap<string, int> block_info_id;
-bimap<string, int> block_info_id = bimap<string, int> ();
-
-// 用于双向存储
-// edge vertex to edge unique id
-extern bimap<vector<int>, int> Appear_Edge_id;
-bimap<vector<int>, int> Appear_Edge_id =bimap<vector<int>, int> ();
-
-
-// 用于记录所有的Block的hash_id
-extern int block_count;
-extern int global_k_max;
-int global_k_max = 0;
-int block_count = 0;
-extern int edge_threshold;
-extern double time_threshold;
-// 用于记录边的结构
-
-// 全局变量
-extern set<int> Appear_Vertexs;
-extern map<int, int> Weight;
-set<int> Appear_Vertexs = set<int> ();
-map<int, int> Weight = map<int, int> ();
 
 
 
@@ -223,6 +198,7 @@ struct Real_Graph {
     }
 
     void truss_decomposition() {
+        cout << "truss decomposing ..." << endl;
         clock_t startTime = clock();
         int max_size = 0;
         deque<pair<int, set<int> > > sups = get_sup(max_size);
@@ -259,7 +235,7 @@ struct Real_Graph {
             cout << "this Vertex dose not exist in the real graph" << endl;
             return set<int>();
         }
-        clock_t startTime = clock();
+        // clock_t startTime = clock();
         set<int> result = set<int> ();
         if (k == 0) {
             k = Real_Vertexs[Vq]->k_max;
@@ -304,8 +280,13 @@ struct Real_Graph {
                 break;
             }
         }
-        cout << "The query processing time is : " << (double) (clock() - startTime) / (1.0 * CLOCKS_PER_SEC) << "s" << endl;
+        // cout << "The query processing time is : " << (double) (clock() - startTime) / (1.0 * CLOCKS_PER_SEC) << "s" << endl;
         return result;
+    }
+    ~Real_Graph() {
+        for(map<int, Simple_Ktruss *>::iterator i = Real_Vertexs.begin(); i != Real_Vertexs.end(); i++) {
+            delete i->second;
+        }
     }
 };
 
@@ -329,7 +310,7 @@ struct Appear_Graph {
         else{
             Weight[Appear_Edge_id.left.find(index)->second]++;
         }
-        if(Weight[Appear_Edge_id.left.find(index)->second] >= edge_threshold) {
+        if(Weight[Appear_Edge_id.left.find(index)->second] >= weight_threshold) {
                 real_graph->insert(index);
         }
     }
@@ -341,5 +322,8 @@ struct Appear_Graph {
         cout << "---------------------------" << endl;
     }
 
+    ~Appear_Graph(){
+        delete real_graph;
+    }
 };
 #endif

@@ -11,6 +11,7 @@
 #include <set>
 #include "utils.hpp"
 #include "simple_ktruss_index.hpp"
+#include "res.hpp"
 using namespace std;
 using namespace boost;
 
@@ -20,7 +21,7 @@ set<int> vertexs_set = set<int> ();
 deque<int> request_queue = deque<int> ();
 deque<double> time_queue = deque<double> ();
 // 设置边weight的阈值
-int edge_threshold = 9;
+int weight_threshold = 9;
 
 // 设置时间间隔阈值
 double time_threshold = 0.1;
@@ -40,7 +41,7 @@ void deal_file(string file_name) {
         return ;
     }
     cout << "The Edge Weight Threshold you want to set is ? " << endl;
-    cin >> edge_threshold;
+    cin >> weight_threshold;
     cout << "The Time Threshold you want to set is ?" << endl;
     cin >> time_threshold;
     vector<string> info;
