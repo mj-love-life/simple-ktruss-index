@@ -41,14 +41,16 @@ void display(set<int> results) {
 }
 
 void physics_deal_file() {
+    cout << "deal................." << endl;
+    clock_t startTime = clock();
     string request_stream;
     vector<string> info;
-    int count = 0;
+    // int count = 0;
     while(getline(read_file, request_stream)) {
-        count++;
-        if(count % 100 == 0) {
-            cout << "Deal with " << count << " line" << endl;
-        }
+        // count++;
+        // if(count % 100 == 0) {
+        //     cout << "Deal with " << count << " line" << endl;
+        // }
         split(info, request_stream, is_any_of(" "));
         pair<int, double> temp= pre_deal(info);
         // 插入点集中
@@ -79,17 +81,20 @@ void physics_deal_file() {
             }
         }
     }
+    cout << "The deal file time is : " << (double) (clock() - startTime) / CLOCKS_PER_SEC << "s" << endl;
 }
 
 void logistic_deal_file() {
+    cout << "deal................." << endl;
+    clock_t startTime = clock();
     string request_stream;
     vector<string> info;
-    int count = 0;
+    // int count = 0;
     while(getline(read_file, request_stream)) {
-        count++;
-        if(count % 100 == 0) {
-            cout << "Deal with " << count << " line" << endl;
-        }
+        // count++;
+        // if(count % 100 == 0) {
+        //     cout << "Deal with " << count << " line" << endl;
+        // }
         split(info, request_stream, is_any_of(" "));
         pair<int, double> temp= pre_deal(info);
         // 插入点集中
@@ -115,6 +120,7 @@ void logistic_deal_file() {
             }
         }
     }
+    cout << "The deal file time is : " << (double) (clock() - startTime) / CLOCKS_PER_SEC << "s" << endl;
 }
 
 
