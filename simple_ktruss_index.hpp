@@ -171,13 +171,30 @@ struct Real_Graph {
     }
 
     // TODO 待改进
+    // 指数前进搜索
     void decrese_one(int edge_index,  deque<pair<int, set<int> > >& sups, int vertex) {
-        int i = 0;
-        for(; i != sups.size(); i++) {
-            if (sups[i].first == edge_index) {
-                sups[i].second.erase(vertex);
+        int now_index = 0;
+        for(; now_index != sups.size(); now_index++) {
+            if (sups[now_index].first == edge_index) {
+                sups[now_index].second.erase(vertex);
                 break;
             }
+        }
+        if (now_index == 0) return ;
+        int now_size = sups[now_index].second.size();
+        if (sups[0].second.size() > now_size) {
+            swap(sups[0], sups[now_index]);
+            return ;
+        }
+        if (sups[now_index - 1].second.size() == now_size) return ;
+        int diff_len = 1;
+        int target_index = now_index - diff_len;
+        while(sups[target_index].second.size() > now_size) {
+            target_index -= diff_len;
+        }
+        if (sups[target_index].second.size() <= now_size) {
+            swap(sups[target_index + 1], sups[now_index]);
+            return;
         }
         // int now_index = i;
         // int now_size = sups[i].second.size();
@@ -187,7 +204,7 @@ struct Real_Graph {
         //         swap(sups[i+1], sups[now_index]);
         //     }
         // }
-        sort(sups.begin(), sups.end(), ascending_cmp);
+        //sort(sups.begin(), sups.end(), ascending_cmp);
     }
 
     void display(deque<pair<int, set<int> > > sups) {

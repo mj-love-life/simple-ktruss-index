@@ -31,6 +31,7 @@ ofstream unique_block_info_file, result_file;
 double time_threshold, alpha;
 int weight_threshold = 0;
 bool logistic_or_physics, query_all;
+int start_attr, end_attr;
 
 void display(set<int> results) {
     for(set<int>::iterator i = results.begin(); i != results.end(); i++) {
@@ -132,22 +133,6 @@ void write_query_file() {
     cout << "The query and write time is : " << (double) (clock() - startTime) / CLOCKS_PER_SEC << "s" << endl;
 }
 
-void write_unique_file() {
-    cout << "write................" << endl;
-    clock_t startTime = clock();
-    set<string> uniques;
-    int i = 0;
-    string request_stream;
-    while(getline(read_file, request_stream)) {
-        if (uniques.count(request_stream)) continue;
-        unique_block_info_file << i << endl;
-        unique_block_info_file << request_stream << endl << endl;
-        uniques.insert(request_stream);
-        i++;
-    }
-    cout << "The write unique block time is : " << (double) (clock() - startTime) / CLOCKS_PER_SEC << "s" << endl;
-}
-
 int get_id() {
     string request_stream;
     getline(cin, request_stream);
@@ -158,7 +143,7 @@ int get_id() {
 }
 
 int main(int argc, char **argv) {
-    if (argc != 9) {
+    if (argc != 11) {
         cout << "The argc is not enough" << endl;
         return 0;
     }
@@ -171,6 +156,8 @@ int main(int argc, char **argv) {
     weight_threshold = strtol(argv[6], nullptr, 10);
     alpha = strtod(argv[7], nullptr);
     query_all = string (argv[8]) == "Y";
+    start_attr = strtol(argv[9], nullptr, 10);
+    end_attr = strtol(argv[10], nullptr, 10);
     if(read_file.is_open() == false) {
         cout << "文件没有成功打开" << endl;
         return 0;
@@ -181,14 +168,13 @@ int main(int argc, char **argv) {
     else {
         physics_deal_file();
     }
-    graph.real_graph->truss_decomposition();
-    cout << "global_k_max is : " <<  global_k_max << endl;
     cout << "global_vertex num is : " << graph.real_graph->Real_Vertexs.size() << endl;
     cout << "global edge num is : " << graph.real_graph->Used_Edges.size() << endl;
+    graph.real_graph->truss_decomposition();
+    cout << "global_k_max is : " <<  global_k_max << endl;
     write_query_file();
     read_file.close();
     read_file.open("./data/" + string(argv[1]));
-    write_unique_file();
     read_file.close();
     unique_block_info_file.close();
     result_file.close();

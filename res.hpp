@@ -54,3 +54,5 @@ extern ofstream unique_block_info_file, result_file;
 extern double time_threshold, alpha;
 extern int weight_threshold;
 extern bool logistic_or_physics, query_all;
+// 开始属性、终止属性
+extern int start_attr, end_attr;

@@ -22,9 +22,11 @@ deque<int> request_queue = deque<int> ();
 deque<double> time_queue = deque<double> ();
 // 设置边weight的阈值
 int weight_threshold = 9;
-
+int start_attr = 3;
+int end_attr = 8;
 // 设置时间间隔阈值
 double time_threshold = 0.1;
+ofstream unique_block_info_file;
 
 void display(set<int> results) {
     for(set<int>::iterator i = results.begin(); i != results.end(); i++) {
@@ -35,7 +37,7 @@ void display(set<int> results) {
 
 void deal_file(string file_name) {
     string request_stream;
-    ifstream in(file_name + ".txt");
+    ifstream in("./data/" + file_name + ".txt");
     if(in.is_open() == false) {
         cout << "文件没有成功打开" << endl;
         return ;

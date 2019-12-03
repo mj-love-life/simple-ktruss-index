@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <algorithm>
 #include "simple_ktruss_index.hpp"
+#include "res.hpp"
 using namespace std;
 using namespace boost;
 
@@ -56,11 +57,13 @@ pair<int, double> pre_deal(vector<string> arrs) {
     process = arrs[15];
     result = arrs[16];
     //TODO 此处暂时认为是 设备id、段索引、扩展名、dev偏移、seg偏移作为标识
-    for(int i = 3; i < 8; i++) {
+    for(int i = start_attr; i < end_attr; i++) {
         unique_vec.push_back(arrs[i]);
     }
     string info = vec2str(unique_vec);
     if(block_info_id.left.count(info) == 0) {
+        unique_block_info_file << block_count << endl;
+        unique_block_info_file << info << endl << endl;
         block_info_id.left.insert(make_pair(info, block_count));
         block_count++;
     }
@@ -123,10 +126,9 @@ string add_zero(string str, int len) {
 
 // 将vector转化为固定格式的str
 string vec2str(vector<string> arr) {
-    int len[5] = {20, 5, 5, 15, 15};
-    string temp = add_zero(arr[0], len[0]);
-    for(int i = 1; i < 5; i++) {
-        temp = temp + "#" + add_zero(arr[i], len[i]);
+    string temp = "";
+    for(int i = 0; i < arr.size(); i++) {
+        temp += (arr[i] + " ");
     }
     return temp;
 }
