@@ -156,17 +156,51 @@ struct Real_Graph {
         Real_Vertexs[u]->insert_neighbor(v);
     }
 
-    deque<pair<int, set<int> > > get_sup(int & max_size) {
+
+    // 使用桶排进行排序sup
+    // 协助进行排序
+    void bucket_sort() {
+
+    }
+
+
+
+
+    deque<pair<int, set<int> > > get_sup(int & max_size, map<int, pair<int, int> > & k_value_index, bimap<int, int> &edge2index, queue<int>& left_k_value) {
         map<int, set<int>> result = map<int, set<int>> ();
         max_size = 0;
+        map<int, queue<int> > buckets = map<int, queue<int> >();
         for(set<int>::iterator i = Used_Edges.begin(); i != Used_Edges.end(); i++) {
             vector<int> Edge_index = Appear_Edge_id.right.find(*i)->second;
             result[*i] = get_map_key_intersection(Real_Vertexs[Edge_index[0]]->getNB(), Real_Vertexs[Edge_index[1]]->getNB());
-            max_size = max(max_size, int(result[*i].size()));            
+            max_size = max(max_size, int(result[*i].size()));
+
         }
         deque<pair<int, set<int> > > temp_result(result.begin(), result.end());
         // TODO 暂时用快排
         sort(temp_result.begin(), temp_result.end(), ascending_cmp);
+        int value_index = 0;
+        vector<int> k_value = vector<int> ();
+        for(deque<pair<int, set<int> > >::iterator i = temp_result.begin(); i != temp_result.end(); i++) {
+            // 记录edge对应的index下标
+            edge2index.left.insert(make_pair(i->first, value_index));
+            int size_value = i->second.size();
+            if(k_value_index.count(size_value) == 0 ) {
+                if (k_value.size() > 0) {
+                    int temp_k = k_value[k_value.size() - 1];
+                    k_value_index[temp_k].second = value_index - k_value_index[temp_k].first;
+                }
+                k_value_index[size_value] = make_pair(value_index, 1);
+                k_value.push_back(size_value);
+                left_k_value.push(size_value);
+            }
+            value_index++;
+        }
+        int temp_k = k_value[k_value.size() - 1];
+        k_value_index[temp_k].second = temp_result.size() - k_value_index[temp_k].first;
+        // for(map<int, pair<int, int> >::iterator i = k_value_index.begin(); i != k_value_index.end(); i++) {
+        //     cout << i->first << " " << i->second.first << " " << i->second.second << endl;
+        // }
         return temp_result;
     }
 
@@ -207,6 +241,37 @@ struct Real_Graph {
         //sort(sups.begin(), sups.end(), ascending_cmp);
     }
 
+    void decrese_one2(int edge_index,  deque<pair<int, set<int> > >& sups, int vertex, int delete_num, 
+        map<int, pair<int, int> > & k_value_index, bimap<int, int> & edge2index, queue<int> & left_k_value) {
+        
+        int now_index = edge2index.left.find(edge_index)->second;
+        sups[now_index].second.erase(vertex);
+        int now_size = sups[now_index].second.size();
+        // 插在k_value_index[now_size+1].first交换
+        int swap_index = k_value_index[now_size + 1].first;
+        int edge_index2 = sups[swap_index].first;
+        if (swap_index != now_index) {
+            swap(sups[now_index], sups[swap_index]);
+            auto pos = edge2index.left.find(edge_index);
+            edge2index.left.replace_data(pos, -1);
+            auto pos2 = edge2index.left.find(edge_index2);
+            edge2index.left.replace_data(pos2, now_index);
+            edge2index.left.replace_data(pos, swap_index);
+        }
+        if (k_value_index.count(now_size) == 0) {   
+            k_value_index[now_size] = make_pair(swap_index, 1);
+            // k_value_index的更新
+        }
+        else {
+            k_value_index[now_size].second++;
+        }
+        k_value_index[now_size + 1].first++;
+        k_value_index[now_size + 1].second--;
+        if(k_value_index[now_size + 1].second == 0) {
+            k_value_index.erase(now_size + 1);
+        }
+    }
+
     void display(deque<pair<int, set<int> > > sups) {
         for(int i = 0; i < sups.size(); i++) {
             cout << "(" << sups[i].first << ", " << sups[i].second.size() <<")";
@@ -218,35 +283,81 @@ struct Real_Graph {
         cout << "truss decomposing ..." << endl;
         clock_t startTime = clock();
         int max_size = 0;
-        deque<pair<int, set<int> > > sups = get_sup(max_size);
+        // 排完序记录每个k值出现的位置以及长度
+        // k-> appear_index, length
+        map<int, pair<int, int> > k_value_index = map<int, pair<int, int> > ();
+        // edge_index -> deque_index
+        bimap<int, int> edge2index = bimap<int, int> ();
+        // left_k_value 也就是对应的k值的索引
+        queue<int> left_k_value = queue<int> ();
+        deque<pair<int, set<int> > > sups = get_sup(max_size, k_value_index, edge2index, left_k_value);
         set<int> Used_Edges_temp = Used_Edges;
         int k = 2;
+        int count = 0;
+        cout << "The get support value time is : " << (double) (clock() - startTime) / CLOCKS_PER_SEC << "s" << endl;
+        int delete_num = 0;
+        int sups_size = sups.size();
         while(Used_Edges_temp.size() > 0) {
             // display(sups);
-            // cout << "k is: " <<  k << " sups.size is " << sups.size() << endl;
-            while(sups.size() > 0 && sups[0].second.size() <= (k - 2)) {
-                pair<int, set<int> > lowest_e = sups[0];
-                sups.pop_front();
+            // cout << "k is: " <<  k << " sups.size is " << sups.size() << " " << delete_num << endl;
+            while(delete_num < sups_size && sups[delete_num].second.size() <= (k - 2)) {
+                count++;
+                pair<int, set<int> > lowest_e = sups[delete_num];
+                delete_num++;
+                // index, size
+                k_value_index[lowest_e.second.size()].first++;
+                k_value_index[lowest_e.second.size()].second--;
+                if(k_value_index[lowest_e.second.size()].second == 0) {
+                    k_value_index.erase(lowest_e.second.size());
+                }
                 int u = Appear_Edge_id.right.find(lowest_e.first)->second[0];
                 int v = Appear_Edge_id.right.find(lowest_e.first)->second[1];
                 if (Real_Vertexs[u]->getNB().size() > Real_Vertexs[v]->getNB().size()) {
                     swap(u, v);
                 }
                 for(set<int>::iterator i = lowest_e.second.begin(); i != lowest_e.second.end(); i++) {
-                    decrese_one(Appear_Edge_id.left.find(get_edge_help(*i, u))->second, sups, v);
-                    decrese_one(Appear_Edge_id.left.find(get_edge_help(*i, v))->second, sups, u);
+                    // delete_num, k_value_index, edge2index, left_k_value
+                    decrese_one2(Appear_Edge_id.left.find(get_edge_help(*i, u))->second, sups, v, delete_num, k_value_index, edge2index, left_k_value);
+                    decrese_one2(Appear_Edge_id.left.find(get_edge_help(*i, v))->second, sups, u, delete_num, k_value_index, edge2index, left_k_value);
                 }
                 Real_Vertexs[u]->get_trussness(v, k);
                 Real_Vertexs[v]->get_trussness(u, k);
                 Used_Edges_temp.erase(lowest_e.first);
+                if(count % 100000 == 0) {
+                    cout << "The 100000 edge deal time is : " << (double) (clock() - startTime) / CLOCKS_PER_SEC << "s" << endl;
+                }
             }
+            // while(sups.size() > 0 && sups[0].second.size() <= (k - 2)) {
+            //     count++;
+            //     delete_num++;
+            //     pair<int, set<int> > lowest_e = sups[0];
+            //     sups.pop_front();
+            //     int u = Appear_Edge_id.right.find(lowest_e.first)->second[0];
+            //     int v = Appear_Edge_id.right.find(lowest_e.first)->second[1];
+            //     if (Real_Vertexs[u]->getNB().size() > Real_Vertexs[v]->getNB().size()) {
+            //         swap(u, v);
+            //     }
+            //     for(set<int>::iterator i = lowest_e.second.begin(); i != lowest_e.second.end(); i++) {
+            //         decrese_one(Appear_Edge_id.left.find(get_edge_help(*i, u))->second, sups, v);
+            //         decrese_one(Appear_Edge_id.left.find(get_edge_help(*i, v))->second, sups, u);
+            //     }
+            //     Real_Vertexs[u]->get_trussness(v, k);
+            //     Real_Vertexs[v]->get_trussness(u, k);
+            //     Used_Edges_temp.erase(lowest_e.first);
+            //     if(count % 1000 == 0) {
+            //         cout << "The 1000 edge deal time is : " << (double) (clock() - startTime) / CLOCKS_PER_SEC << "s" << endl;
+            //     }
+            // }
+        // for(map<int, pair<int, int> >::iterator i = k_value_index.begin(); i != k_value_index.end(); i++) {
+        //     cout << i->first << " " << i->second.first << " " << i->second.second << endl;
+        // }
             // 获取trussness值
             k = k + 1;
         }
         cout << "The truss decomposition time is : " << (double) (clock() - startTime) / CLOCKS_PER_SEC << "s" << endl;
     }
 
-
+    //TODO 返回结果使用weight进行排序
     set<int> query_processing(int Vq, int k=0) {
         if( Real_Vertexs.count(Vq) == 0) {
             cout << "this Vertex dose not exist in the real graph" << endl;
@@ -289,9 +400,7 @@ struct Real_Graph {
                             }
                         }
                     }
-
                 }
-
             }
             else if(i->second < k) {
                 break;
