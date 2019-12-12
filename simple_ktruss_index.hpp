@@ -169,16 +169,50 @@ struct Real_Graph {
     deque<pair<int, set<int> > > get_sup(int & max_size, map<int, pair<int, int> > & k_value_index, bimap<int, int> &edge2index, queue<int>& left_k_value) {
         map<int, set<int>> result = map<int, set<int>> ();
         max_size = 0;
-        map<int, queue<int> > buckets = map<int, queue<int> >();
+        map<int, set<int> > buckets = map<int, set<int> >();
+        // bucket用于存储 k_value index
+        // 该值用于统计每个k值对应的数量
+        map<int, int> k_value_size = map<int, int> ();
+        int temp_value = 0;
+        int Used_Edge_index = 0;
         for(set<int>::iterator i = Used_Edges.begin(); i != Used_Edges.end(); i++) {
             vector<int> Edge_index = Appear_Edge_id.right.find(*i)->second;
             result[*i] = get_map_key_intersection(Real_Vertexs[Edge_index[0]]->getNB(), Real_Vertexs[Edge_index[1]]->getNB());
-            max_size = max(max_size, int(result[*i].size()));
-
+            temp_value = int(result[*i].size());
+            max_size = max(max_size, temp_value);
+            k_value_size.count(temp_value) == 0 ? k_value_size[temp_value] = 1 : k_value_size[temp_value]++;
+            if(buckets.count(temp_value) == 0) {
+                buckets[temp_value] = set<int> {Used_Edge_index};
+            }
+            else {
+                buckets[temp_value].insert(Used_Edge_index);
+            }
+            Used_Edge_index++;
         }
+
+        // 上面的过程统计了每个k值对应的大小，后面进行交换排序就好了
+        // TODO 以下部分是桶排，是否因为删除问题带来了时间消耗类似？另外是否算法正确
         deque<pair<int, set<int> > > temp_result(result.begin(), result.end());
+        Used_Edge_index = 0;
+        for(map<int, set<int> >::iterator i = buckets.begin(); i != buckets.end(); i++) {
+            while(i->second.size() > 0) {
+                int now_index_size = temp_result[Used_Edge_index].second.size();
+                if(now_index_size == i->first){
+                    i->second.erase(Used_Edge_index);
+                }
+                else{
+                    int swap_index = *(i->second.begin());
+                    i->second.erase(swap_index);
+                    buckets[now_index_size].erase(Used_Edge_index);
+                    swap(temp_result[swap_index], temp_result[Used_Edge_index]);
+                    buckets[now_index_size].insert(swap_index);
+                }
+                Used_Edge_index++;
+            }
+        }
+
         // TODO 暂时用快排
-        sort(temp_result.begin(), temp_result.end(), ascending_cmp);
+        //sort(temp_result.begin(), temp_result.end(), ascending_cmp);
         int value_index = 0;
         vector<int> k_value = vector<int> ();
         for(deque<pair<int, set<int> > >::iterator i = temp_result.begin(); i != temp_result.end(); i++) {
