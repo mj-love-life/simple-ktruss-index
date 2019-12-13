@@ -140,8 +140,7 @@ struct Real_Graph {
     }
     
 
-    void insert(vector<int> edge) {
-        int edge_index = Appear_Edge_id.left.find(edge)->second;
+    void insert(vector<int> edge, int edge_index) {
         if (Used_Edges.count(edge_index) == 0) {
             insert_vertex(edge[0], edge[1]);
             insert_vertex(edge[1], edge[0]);
@@ -461,17 +460,19 @@ struct Appear_Graph {
     // 插入一条新出现的边
     void insert(int a, int b) {
         vector<int> index = get_edge_help(a, b);
+        // 传递边的id以减少时间
+        int edge_index = 0;
         if(Appear_Edge_id.left.count(index) == 0) {
-            int edge_index = Appear_Edge_id.left.size();
+            edge_index = Appear_Edge_id.left.size();
             Appear_Edge_id.left.insert(make_pair(index, edge_index));
             Weight[edge_index] = 1;
-            
         }
         else{
-            Weight[Appear_Edge_id.left.find(index)->second]++;
+            edge_index = Appear_Edge_id.left.find(index)->second;
+            Weight[edge_index]++;
         }
-        if(Weight[Appear_Edge_id.left.find(index)->second] >= weight_threshold) {
-                real_graph->insert(index);
+        if(Weight[edge_index] >= weight_threshold) {
+            real_graph->insert(index, edge_index);
         }
     }
 

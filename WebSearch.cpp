@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
             cin >> weight_threshold;
             for(auto i = Appear_Edge_id.left.begin(); i != Appear_Edge_id.left.end(); i++) {
                 if (Weight[i->second] >= weight_threshold) {
-                    graph.real_graph->insert(i->first);
+                    graph.real_graph->insert(i->first, i->second);
                 }
             }
         }
