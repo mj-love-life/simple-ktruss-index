@@ -47,7 +47,7 @@ void deal_file() {
     vector<string> info;
     // int count = 0;
     int node1, node2;
-    for(int i = 0; i < 3387388; i++) {
+    for(int i = 0; i < 11095298; i++) {
         read_file >> node1 >> node2;
         graph.insert(node1, node2);
     }
