@@ -196,6 +196,9 @@ double get_acc() {
                 in_real_not_pred_count++;
             }
             set<int> temp_set = graph.real_graph->query_processing(temp.first);
+            if(pred.size() > 200) {
+                pred = set<int> ();
+            }
             set_union(pred.begin(), pred.end(), temp_set.begin(), temp_set.end(), inserter(pred, pred.begin()));
         }
         if(line_count % 10000 == 0) {
@@ -247,7 +250,7 @@ int main(int argc, char **argv) {
     while(ajust_wight_threshold > 0){
         cout << "global_vertex num is : " << graph.real_graph->Real_Vertexs.size() << endl;
         cout << "global edge num is : " << graph.real_graph->Used_Edges.size() << endl;
-        graph.real_graph->truss_decomposition();
+        graph.real_graph->truss_decomposition2();
         cout << "global_k_max is : " <<  global_k_max << endl;
         // 增加允许动态调整weight_threshold
         cin >> ajust_wight_threshold;

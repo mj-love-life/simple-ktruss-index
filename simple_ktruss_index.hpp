@@ -196,14 +196,14 @@ struct Real_Graph {
             insert_time += ((double) (clock() - startTime2) / CLOCKS_PER_SEC);
             temp_value = int(result[*i].size());
             k_value_size_temp.count(temp_value) == 0 ? k_value_size_temp[temp_value] = 1 : k_value_size_temp[temp_value]++;
-            if(count_num % 10000 == 0) {
-                cout << "The " << count_num << "edge support time is : " << (double) (clock() - startTime) / CLOCKS_PER_SEC << "s" << endl;
-                cout << "find edge time is: "  << find_time << "s" << endl;
-                cout << "insert edge time is: " << insert_time << "s" << endl;
-                cout << "inbalance_time: " << inbalance_time << endl;
-                find_time = 0;
-                insert_time = 0;
-            }
+            // if(count_num % 10000 == 0) {
+            //     cout << "The " << count_num << "edge support time is : " << (double) (clock() - startTime) / CLOCKS_PER_SEC << "s" << endl;
+            //     cout << "find edge time is: "  << find_time << "s" << endl;
+            //     cout << "insert edge time is: " << insert_time << "s" << endl;
+            //     cout << "inbalance_time: " << inbalance_time << endl;
+            //     find_time = 0;
+            //     insert_time = 0;
+            // }
         }
         int now_index = 0;
         // k -> start_index, len
