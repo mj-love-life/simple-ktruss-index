@@ -47,7 +47,8 @@ void deal_file() {
     vector<string> info;
     // int count = 0;
     int node1, node2;
-    for(int i = 0; i < 11095298; i++) {
+    // 有待改成全局变量方便进行调整
+    for(int i = 0; i < 3387388; i++) {
         read_file >> node1 >> node2;
         graph.insert(node1, node2);
     }
@@ -116,7 +117,7 @@ int main(int argc, char **argv) {
     deal_file();
     cout << "global_vertex num is : " << graph.real_graph->Real_Vertexs.size() << endl;
     cout << "global edge num is : " << graph.real_graph->Used_Edges.size() << endl;
-    graph.real_graph->truss_decomposition();
+    graph.real_graph->truss_decomposition2();
     cout << "global_k_max is : " <<  global_k_max << endl;
     // write_query_file();
     // read_file.close();

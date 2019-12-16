@@ -180,7 +180,9 @@ double get_acc() {
     string request_stream;
     vector<string> info;
     // int count = 0;
+    int line_count = 0;
     while(getline(read_file, request_stream)) {
+        line_count++;
         split(info, request_stream, is_any_of(","));
         pair<int, double> temp= pre_deal2(info);
         if (graph.real_graph->Real_Vertexs.count(temp.first) == 0) {
@@ -195,6 +197,14 @@ double get_acc() {
             }
             set<int> temp_set = graph.real_graph->query_processing(temp.first);
             set_union(pred.begin(), pred.end(), temp_set.begin(), temp_set.end(), inserter(pred, pred.begin()));
+        }
+        if(line_count % 10000 == 0) {
+            cout << "line count" << line_count << endl;
+            cout << "pred size is " << pred.size() << endl;
+            cout << "not_in_real_count is: " << not_in_real_count << endl;
+            cout << "in_real_not_pred_count is: " << in_real_not_pred_count << endl;
+            cout << "in_real_in_pred_count is: " << in_real_in_pred_count << endl;
+            cout << "The calculate accurate time is : " << (double) (clock() - startTime) / CLOCKS_PER_SEC << "s" << endl;
         }
     }
     cout << "not_in_real_count is: " << not_in_real_count << endl;

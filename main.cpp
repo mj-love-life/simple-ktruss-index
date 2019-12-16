@@ -102,10 +102,9 @@ int main() {
     cout << "which file do you want to deal with? \n";
     cin >> file_name;
     deal_file(file_name);
-
-    graph.real_graph->truss_decomposition();
+    graph.real_graph->display();
+    graph.real_graph->truss_decomposition2();
     cout << "global_k_max is : " <<  global_k_max << endl;
-    //graph.real_graph->display();
     int v_q, k;
     string choice;
     v_q = 1;
